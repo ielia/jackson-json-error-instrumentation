@@ -56,7 +56,7 @@ public class AppTest extends AbstractTestNGSpringContextTests {
         fooDTO.setStringField2("Hi World");
         fooDTO.setBarDTOs1(Arrays.asList(barDTO1, barDTO2));
         fooDTO.setBarDTOs2(Arrays.asList(barDTO3, barDTO4));
-        fooDTO.setStuff1(new HashMap<>() {{
+        fooDTO.setStuff1(new HashMap<String, Object>() {{
             put("bool", false);
             put("int", 1);
             put("string", "abc");

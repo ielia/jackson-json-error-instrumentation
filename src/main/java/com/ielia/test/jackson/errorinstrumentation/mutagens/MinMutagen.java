@@ -17,7 +17,7 @@ import javax.validation.constraints.DecimalMin;
 import javax.validation.constraints.Min;
 
 public class MinMutagen implements Mutagen {
-    protected Map<Class<? extends Number>, BigDecimal> MIN_VALUES_BY_TYPE = new HashMap<>() {{
+    protected Map<Class<? extends Number>, BigDecimal> MIN_VALUES_BY_TYPE = new HashMap<Class<? extends Number>, BigDecimal>() {{
             put(AtomicInteger.class, BigDecimal.valueOf(Integer.MIN_VALUE));
             put(AtomicLong.class, BigDecimal.valueOf(Long.MIN_VALUE));
             put(Byte.class, BigDecimal.valueOf(Byte.MAX_VALUE));

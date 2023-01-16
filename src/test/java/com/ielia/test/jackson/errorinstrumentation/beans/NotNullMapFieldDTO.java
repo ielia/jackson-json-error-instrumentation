@@ -5,7 +5,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class NotNullMapFieldDTO {
-    @NotNull public Map<String, Integer> values = new TreeMap<>() {{
+    @NotNull public Map<String, Integer> values = new TreeMap<String, Integer>() {{
         put("a", 1);
         put("b", 2);
         put("c", 3);

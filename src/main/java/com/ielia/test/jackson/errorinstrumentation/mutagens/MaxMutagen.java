@@ -16,7 +16,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class MaxMutagen implements Mutagen {
-    protected Map<Class<?>, BigDecimal> MAX_VALUES_BY_TYPE = new HashMap<>() {{
+    protected Map<Class<?>, BigDecimal> MAX_VALUES_BY_TYPE = new HashMap<Class<?>, BigDecimal>() {{
         put(AtomicInteger.class, BigDecimal.valueOf(Integer.MAX_VALUE));
         put(AtomicLong.class, BigDecimal.valueOf(Long.MAX_VALUE));
         put(Byte.class, BigDecimal.valueOf(Byte.MAX_VALUE));

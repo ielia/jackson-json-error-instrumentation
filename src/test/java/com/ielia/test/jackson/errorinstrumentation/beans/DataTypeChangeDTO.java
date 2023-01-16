@@ -18,5 +18,5 @@ public class DataTypeChangeDTO {
     public double[] values = new double[] { 2.1, 2.2 };
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"}) private String value = "3";
     public String getValue() { return value; }
-    @JsonProperty public Map<String, Integer> methodValue() { return new TreeMap<>() {{ put("a", 4); put("b", 5); }}; }
+    @JsonProperty public Map<String, Integer> methodValue() { return new TreeMap<String, Integer>() {{ put("a", 4); put("b", 5); }}; }
 }
