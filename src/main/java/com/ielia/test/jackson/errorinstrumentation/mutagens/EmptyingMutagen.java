@@ -25,22 +25,25 @@ public class EmptyingMutagen implements Mutagen {
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(boolean isField, Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws IOException {
-        return trySerializeAsPrimitiveCollectionLike(isField, gen, writer, Array.getLength(array), indicator);
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws IOException {
+        return trySerializeAsPrimitiveCollectionLike(gen, writer, Array.getLength(array), indicator, isField);
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(boolean isField, Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws IOException {
-        return trySerializeAsPrimitiveCollectionLike(isField, gen, writer, collection.size(), indicator);
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws IOException {
+        return trySerializeAsPrimitiveCollectionLike(gen, writer, collection.size(), indicator, isField);
     }
 
-    protected boolean trySerializeAsPrimitiveCollectionLike(boolean isField, JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator) throws IOException {
+    protected boolean trySerializeAsPrimitiveCollectionLike(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
         JavaType type = writer.getType().getContentType();
         if (type.isTypeOrSubTypeOf(CharSequence.class) && length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             if (isField) { gen.writeFieldName(writer.getName()); }
             gen.writeStartArray();
             for (int i = 0; i < length; ++i) { gen.writeString(""); }
             gen.writeEndArray();
+            indicator.setDescription("Emptied collection.");
+            indicator.setMutagen(this.getClass());
+            indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
             return true;
         }
         return false;
@@ -53,6 +56,9 @@ public class EmptyingMutagen implements Mutagen {
             if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
                 handleFieldName.accept(gen, name);
                 gen.writeString("");
+                indicator.setDescription("Emptied string.");
+                indicator.setMutagen(this.getClass());
+                indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
                 result = true;
             }
         } else if (type.isArrayType() || type.isCollectionLikeType()) {
@@ -60,6 +66,9 @@ public class EmptyingMutagen implements Mutagen {
                 handleFieldName.accept(gen, name);
                 gen.writeStartArray();
                 gen.writeEndArray();
+                indicator.setDescription("Emptied array.");
+                indicator.setMutagen(this.getClass());
+                indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
                 result = true;
             }
         } else if (!type.isPrimitive() && !type.isTypeOrSubTypeOf(Number.class)) {
@@ -67,6 +76,9 @@ public class EmptyingMutagen implements Mutagen {
                 handleFieldName.accept(gen, name);
                 gen.writeStartObject();
                 gen.writeEndObject();
+                indicator.setDescription("Emptied object.");
+                indicator.setMutagen(this.getClass());
+                indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
                 result = true;
             }
         }

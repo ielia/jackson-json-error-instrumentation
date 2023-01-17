@@ -61,7 +61,7 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
                 Object prop = ((BeanPropertyWriter) writer).get(bean);
                 if (prop != null) {
                     for (Mutagen mutagen : mutagens) {
-                        mutated |= mutagen.serializeAsPrimitiveArray(true, prop, gen, provider, writer, indexIndicator);
+                        mutated |= mutagen.serializeAsPrimitiveArray(prop, gen, provider, writer, indexIndicator, true);
                     }
                 }
             }
@@ -70,7 +70,7 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
                 Collection<?> prop = (Collection<?>) ((BeanPropertyWriter) writer).get(bean);
                 if (prop != null) {
                     for (Mutagen mutagen : mutagens) {
-                        mutated |= mutagen.serializeAsPrimitiveCollection(true, prop, gen, provider, writer, indexIndicator);
+                        mutated |= mutagen.serializeAsPrimitiveCollection(prop, gen, provider, writer, indexIndicator, true);
                     }
                 }
             }

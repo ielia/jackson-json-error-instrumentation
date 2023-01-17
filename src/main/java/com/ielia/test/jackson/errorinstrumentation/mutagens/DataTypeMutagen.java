@@ -12,52 +12,68 @@ import java.util.Collection;
 public class DataTypeMutagen implements Mutagen {
     @Override
     public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            if (CharSequence.class.isAssignableFrom(writer.getType().getRawClass())) {
-                gen.writeNumber(123);
-            } else {
-                gen.writeString("abc");
-            }
-            return true;
-        }
-        return false;
+        return tryWritingValue(gen, writer, indicator, false);
     }
 
     @Override
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        JavaType propType = writer.getType();
+        return tryWritingValue(gen, writer, indicator, true);
+    }
+
+    @Override
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
+        return tryWritingArray(gen, writer, Array.getLength(array), indicator, isField);
+    }
+
+    @Override
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
+        return tryWritingArray(gen, writer, collection.size(), indicator, isField);
+    }
+
+    protected String getTypeName(JavaType type) {
+        if (type.isArrayType()) {
+            return type.getContentType().toCanonical() + "[]";
+        }
+        return type.toCanonical();
+    }
+
+    protected boolean tryWritingArray(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean withFieldName) throws Exception {
         if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            // FIXME: Use key serializer. See MapSerializer and MapProperty.
-            if (CharSequence.class.isAssignableFrom(propType.getRawClass())) {
-                gen.writeNumberField(writer.getName(), 123);
+            JavaType propType = writer.getType();
+            if (withFieldName) { gen.writeFieldName(writer.getName()); }
+            gen.writeStartArray();
+            if (CharSequence.class.isAssignableFrom(writer.getType().getContentType().getRawClass())) {
+                for (int i = 0; i < length; ++i) {
+                    gen.writeNumber(123);
+                    indicator.setDescription("Replaced strings with numbers.");
+                }
             } else {
-                gen.writeStringField(writer.getName(), "abc");
+                for (int i = 0; i < length; ++i) {
+                    gen.writeString("abc");
+                    indicator.setDescription("Replaced " + getTypeName(propType.getContentType()) + " values with strings.");
+                }
             }
+            gen.writeEndArray();
+            indicator.setMutagen(DataTypeMutagen.class);
+            indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
             return true;
         }
         return false;
     }
 
-    @Override
-    public boolean serializeAsPrimitiveArray(boolean isField, Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        return tryWritingArray(isField, gen, writer, Array.getLength(array), indicator);
-    }
-
-    @Override
-    public boolean serializeAsPrimitiveCollection(boolean isField, Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        return tryWritingArray(isField, gen, writer, collection.size(), indicator);
-    }
-
-    protected boolean tryWritingArray(boolean isField, JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator) throws Exception {
+    protected boolean tryWritingValue(JsonGenerator gen, PropertyWriter writer, MutationIndexIndicator indicator, boolean withFieldName) throws Exception {
         if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            if (isField) { gen.writeFieldName(writer.getName()); }
-            gen.writeStartArray();
-            if (CharSequence.class.isAssignableFrom(writer.getType().getContentType().getRawClass())) {
-                for (int i = 0; i < length; ++i) { gen.writeNumber(123); }
+            JavaType propType = writer.getType();
+            if (withFieldName) { gen.writeFieldName(writer.getName()); }
+            if (CharSequence.class.isAssignableFrom(propType.getRawClass())) {
+                gen.writeNumber(123);
+                indicator.setDescription("Replaced string with number.");
             } else {
-                for (int i = 0; i < length; ++i) { gen.writeString("abc"); }
+                gen.writeString("abc");
+                indicator.setDescription("Replaced " + getTypeName(propType) + " value with string.");
             }
-            gen.writeEndArray();
+            indicator.setMutagen(DataTypeMutagen.class);
+            indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
             return true;
         }
         return false;

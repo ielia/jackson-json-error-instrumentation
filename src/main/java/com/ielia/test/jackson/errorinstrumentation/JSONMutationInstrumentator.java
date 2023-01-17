@@ -45,23 +45,21 @@ public class JSONMutationInstrumentator {
         this.mutagens = mutagens;
     }
 
-    public Stream<String> getErrorCombinations() {
+    public Stream<Mutation> getErrorCombinations() {
         AtomicLong targetMutationIndex = new AtomicLong(-1);
-
-        // ObjectMapper firstMapper = new ObjectMapper();
-        // MutationIndexIndicator firstIndexIndicator = new MutationIndexIndicator(targetMutationIndex.get());
 
         try {
             String originalJSON = new ObjectMapper().writeValueAsString(bean);
-            // String firstErroneousJSON = getWriter(firstMapper, firstIndexIndicator).writeValueAsString(bean);
             return Stream.iterate(
-                    "",
-                    json -> !originalJSON.equals(json),
-                    json -> {
+                    new Mutation(),
+                    mutation -> !originalJSON.equals(mutation.getJSON()),
+                    mutation -> {
                         try {
                             ObjectMapper mapper = new ObjectMapper();
-                            return getWriter(mapper, new MutationIndexIndicator(targetMutationIndex.incrementAndGet()))
-                                    .writeValueAsString(bean);
+                            MutationIndexIndicator indexIndicator = new MutationIndexIndicator(targetMutationIndex.incrementAndGet());
+                            String json = getWriter(mapper, indexIndicator).writeValueAsString(bean);
+                            return new Mutation(indexIndicator.targetMutationIndex, indexIndicator.getPath(),
+                                    indexIndicator.getMutagen(), indexIndicator.getDescription(), json);
                         } catch (JsonProcessingException exception) {
                             throw new RuntimeException(exception);
                         }

@@ -2,6 +2,7 @@ package com.ielia.test.jackson.errorinstrumentation.mutagens;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 
@@ -52,19 +53,23 @@ public class MaxMutagen implements Mutagen {
                         : new BigDecimal(dMax.value())
                     : new BigDecimal(max.value());
             gen.writeFieldName(writer.getName());
-            gen.writeRawValue(maxValue.add(BigDecimal.ONE).toString());
+            BigDecimal newValue = maxValue.add(BigDecimal.ONE);
+            gen.writeRawValue(newValue.toString());
+            indicator.setDescription("Changed value from " + ((BeanPropertyWriter) writer).get(bean) + " to " + newValue + ".");
+            indicator.setMutagen(this.getClass());
+            indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(boolean isField, Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator) throws Exception {
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField) throws Exception {
         return false; // TODO: See if there is any max spec for array elements.
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(boolean isField, Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator) throws Exception {
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField) throws Exception {
         return false; // TODO: See if there is any max spec for collection elements.
     }
 }

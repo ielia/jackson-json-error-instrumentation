@@ -8,6 +8,7 @@ import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 import java.util.Collection;
 
 public abstract class AbstractFieldNameMutagen implements Mutagen {
+    protected abstract String getMutationDescription();
     protected abstract String mutateFieldName(PropertyWriter writer);
 
     @Override
@@ -18,20 +19,29 @@ public abstract class AbstractFieldNameMutagen implements Mutagen {
     @Override
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
         if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            gen.writeFieldName(mutateFieldName(writer));
+            String newFieldName = mutateFieldName(writer);
+            gen.writeFieldName(newFieldName);
             writer.serializeAsElement(bean, gen, provider);
+            setIndicatorFields(gen, writer.getName(), newFieldName, indicator);
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(boolean isField, Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator) {
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField) {
         return false;
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(boolean isField, Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator) {
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField) {
         return false;
+    }
+
+    protected void setIndicatorFields(JsonGenerator gen, String origFieldName, String newFieldName, MutationIndexIndicator indicator) {
+        indicator.setDescription(getMutationDescription());
+        String path = gen.getOutputContext().pathAsPointer().toString();
+        indicator.setPath(path.substring(0, path.length() - newFieldName.length()) + origFieldName);
+        indicator.setMutagen(this.getClass());
     }
 }

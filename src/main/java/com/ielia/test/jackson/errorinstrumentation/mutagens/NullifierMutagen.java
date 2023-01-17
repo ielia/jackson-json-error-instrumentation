@@ -20,27 +20,33 @@ public class NullifierMutagen implements Mutagen {
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
         if (writer.getAnnotation(NotNull.class) != null && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             gen.writeNullField(writer.getName());
+            indicator.setDescription("Nullified value.");
+            indicator.setMutagen(this.getClass());
+            indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
             return true;
         }
         return false;
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(boolean isField, Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        return trySerializeAsPrimitiveCollectionLike(isField, writer.getName(), gen, Array.getLength(array), indicator);
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
+        return trySerializeAsPrimitiveCollectionLike(writer.getName(), gen, Array.getLength(array), indicator, isField);
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(boolean isField, Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        return trySerializeAsPrimitiveCollectionLike(isField, writer.getName(), gen, collection.size(), indicator);
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
+        return trySerializeAsPrimitiveCollectionLike(writer.getName(), gen, collection.size(), indicator, isField);
     }
 
-    protected boolean trySerializeAsPrimitiveCollectionLike(boolean isField, String fieldName, JsonGenerator gen, int length, MutationIndexIndicator indicator) throws IOException {
+    protected boolean trySerializeAsPrimitiveCollectionLike(String fieldName, JsonGenerator gen, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
         if (length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             if (isField) { gen.writeFieldName(fieldName); }
             gen.writeStartArray();
             for (int i = 0; i < length; ++i) { gen.writeNull(); }
             gen.writeEndArray();
+            indicator.setDescription("Nullified all values of the collection.");
+            indicator.setMutagen(this.getClass());
+            indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
             return true;
         }
         return false;

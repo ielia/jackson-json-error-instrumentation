@@ -70,7 +70,7 @@ public class AppTest extends AbstractTestNGSpringContextTests {
     @DataProvider(name = "error-cases")
     public Iterator<Object[]> dataProvider() {
         logger.info("<><><><><><><><><><> DATA PROVIDER <><><><><><><><><><>");
-        return new JSONMutationInstrumentator(buildFoo()).getErrorCombinations().map(s -> new Object[]{s}).iterator();
+        return new JSONMutationInstrumentator(buildFoo()).getErrorCombinations().map(m -> new Object[]{m.getJSON()}).iterator();
     }
 
     @Test(groups = "integration")
