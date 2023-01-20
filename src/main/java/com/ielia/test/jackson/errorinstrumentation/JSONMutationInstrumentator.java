@@ -2,6 +2,7 @@ package com.ielia.test.jackson.errorinstrumentation;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
@@ -17,6 +18,7 @@ import com.ielia.test.jackson.errorinstrumentation.mutagens.NullifierMutagen;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -35,6 +37,8 @@ public class JSONMutationInstrumentator {
 
     protected final Object bean;
     protected final Mutagen[] mutagens;
+    protected final Map<Class<?>, Class<?>> mixins;
+    protected Class<?> view;
 
     public JSONMutationInstrumentator(Object bean) {
         this(bean, DEFAULT_MUTAGENS);
@@ -43,13 +47,25 @@ public class JSONMutationInstrumentator {
     public JSONMutationInstrumentator(Object bean, Mutagen... mutagens) {
         this.bean = bean;
         this.mutagens = mutagens;
+        mixins = new HashMap<>();
+        view = null;
+    }
+
+    public JSONMutationInstrumentator addMixIn(Class<?> target, Class<?> mixIn) {
+        mixins.put(target, mixIn);
+        return this;
+    }
+
+    public JSONMutationInstrumentator withView(Class<?> view) {
+        this.view = view;
+        return this;
     }
 
     public Stream<Mutation> getErrorCombinations() {
         AtomicLong targetMutationIndex = new AtomicLong(-1);
 
         try {
-            String originalJSON = new ObjectMapper().writeValueAsString(bean);
+            final String originalJSON = getWriter(new ObjectMapper()).writeValueAsString(bean);
             return Stream.iterate(
                     new Mutation(),
                     mutation -> !originalJSON.equals(mutation.getJSON()),
@@ -100,7 +116,7 @@ public class JSONMutationInstrumentator {
             serializers.addSerializer(OverrideStdArraySerializers.findStandardImpl(type));
         }
         */
-        return mapper.setFilterProvider(filterProvider)
+        mapper.setFilterProvider(filterProvider)
                 // .setSerializerFactory(PatchedSerializerFactory.instance)
                 // .setSerializerFactory(BeanSerializerFactory.instance.withConfig(
                 //         new SerializerFactoryConfig().withAdditionalSerializers(serializers))
@@ -117,7 +133,21 @@ public class JSONMutationInstrumentator {
                 .addMixIn(float[].class, CompositeFilter.Mixin.class)
                 .addMixIn(int[].class, CompositeFilter.Mixin.class)
                 .addMixIn(long[].class, CompositeFilter.Mixin.class)
-                .addMixIn(short[].class, CompositeFilter.Mixin.class)
-                .writer();
+                .addMixIn(short[].class, CompositeFilter.Mixin.class);
+        return getWriter(mapper);
+    }
+
+    protected ObjectWriter getWriter(ObjectMapper mapper) {
+        for (Map.Entry<Class<?>, Class<?>> mixinSpec : mixins.entrySet()) {
+            mapper.addMixIn(mixinSpec.getKey(), mixinSpec.getValue());
+        }
+        // TODO: Use the non-deprecated version
+        if (view != null) {
+            mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
+            // mapper.setConfig(mapper.getSerializationConfig().withView(view));
+        }
+        // mapper.setSerializationInclusion(JsonInclude.Include.CUSTOM);
+        return mapper.writerWithView(view);
+        // return mapper.writer();
     }
 }

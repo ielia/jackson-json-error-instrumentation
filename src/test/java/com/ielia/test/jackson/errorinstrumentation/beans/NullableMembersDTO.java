@@ -5,8 +5,8 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import javax.validation.constraints.Null;
 
 public class NullableMembersDTO {
-    @Null public int field = 1;
+    @Null public Integer field = 1;
     @SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal"}) private int value = 2;
-    @Null public int getValue() { return value; }
-    @JsonProperty @Null public int methodValue() { return 3; }
+    @Null public Integer getValue() { return value; }
+    @JsonProperty @Null public Integer methodValue() { return 3; }
 }

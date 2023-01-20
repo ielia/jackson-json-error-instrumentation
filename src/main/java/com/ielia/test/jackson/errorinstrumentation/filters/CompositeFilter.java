@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.Mutagen;
 
+import java.util.Arrays;
 import java.util.Collection;
 
 public class CompositeFilter extends SimpleBeanPropertyFilter {
@@ -28,31 +29,36 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
 
     @Override
     public void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-        boolean mutated = false;
-        for (Mutagen mutagen : mutagens) {
-            mutated |= mutagen.serializeAsElement(bean, gen, provider, writer, indexIndicator);
-        }
-        if (!mutated) {
-            super.serializeAsElement(bean, gen, provider, writer);
+        // TODO: See if there is a better way to check for view.
+        if (provider.getActiveView() == null || Arrays.binarySearch(((BeanPropertyWriter) writer).getViews(), provider.getActiveView()) >= 0) {
+            boolean mutated = false;
+            for (Mutagen mutagen : mutagens) {
+                mutated |= mutagen.serializeAsElement(bean, gen, provider, writer, indexIndicator);
+            }
+            if (!mutated) {
+                super.serializeAsElement(bean, gen, provider, writer);
+            }
         }
     }
 
     @Override
     public void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-        gen.getOutputContext().pathAsPointer();
-        boolean mutated = false;
-        for (Mutagen mutagen : mutagens) {
-            mutated |= mutagen.serializeAsField(bean, gen, provider, writer, indexIndicator);
-        }
-        if (!mutated) {
-            mutated = serializeDirectProps(bean, gen, provider, writer);
-        }
-        if (!mutated) {
-            super.serializeAsField(bean, gen, provider, writer);
+        // TODO: See if there is a better way to check for view.
+        if (provider.getActiveView() == null || Arrays.asList(((BeanPropertyWriter) writer).getViews()).contains(provider.getActiveView())) {
+            boolean mutated = false;
+            for (Mutagen mutagen : mutagens) {
+                mutated |= mutagen.serializeAsField(bean, gen, provider, writer, indexIndicator);
+            }
+            if (!mutated) {
+                mutated = serializeDirectProps(bean, gen, provider, writer);
+            }
+            if (!mutated) {
+                super.serializeAsField(bean, gen, provider, writer);
+            }
         }
     }
 
-    public boolean serializeDirectProps(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
+    protected boolean serializeDirectProps(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
         boolean mutated = false;
         JavaType propType = writer.getType();
         JavaType contentType = propType.getContentType();

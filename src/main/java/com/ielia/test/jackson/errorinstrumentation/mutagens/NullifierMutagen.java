@@ -18,7 +18,7 @@ public class NullifierMutagen implements Mutagen {
 
     @Override
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        if (writer.getAnnotation(NotNull.class) != null && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
+        if ((writer.getType().isPrimitive() || writer.getAnnotation(NotNull.class) != null) && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             gen.writeNullField(writer.getName());
             indicator.setDescription("Nullified value.");
             indicator.setMutagen(this.getClass());
