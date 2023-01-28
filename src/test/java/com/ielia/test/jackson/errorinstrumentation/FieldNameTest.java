@@ -1,4 +1,4 @@
-package com.ielia.test.jackson.errorinstrumentation;
+﻿package com.ielia.test.jackson.errorinstrumentation;
 
 import com.ielia.test.jackson.errorinstrumentation.mutagens.FieldNameCaseSwapMutagen;
 import com.ielia.test.jackson.errorinstrumentation.beans.NullableMembersDTO;
