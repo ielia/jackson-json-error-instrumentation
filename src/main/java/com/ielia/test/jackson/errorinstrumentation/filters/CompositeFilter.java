@@ -16,24 +16,28 @@ import java.util.Collection;
 public class CompositeFilter extends SimpleBeanPropertyFilter {
     public static final String FILTER_ID = "JSON-Automated-QA-Test-Mutagenic-Composite-Filter";
 
+    protected final Class<?>[] groups;
     protected final MutationIndexIndicator indexIndicator;
     protected final Mutagen[] mutagens;
 
     @JsonFilter(FILTER_ID)
     public static class Mixin {}
 
-    public CompositeFilter(MutationIndexIndicator indexIndicator, Mutagen... mutagens) {
+    public CompositeFilter(MutationIndexIndicator indexIndicator, Class<?>[] groups, Mutagen[] mutagens) {
         this.indexIndicator = indexIndicator;
+        this.groups = groups;
         this.mutagens = mutagens;
     }
 
     @Override
     public void serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-        // TODO: See if there is a better way to check for view.
-        if (provider.getActiveView() == null || Arrays.binarySearch(((BeanPropertyWriter) writer).getViews(), provider.getActiveView()) >= 0) {
+        // TODO: See if it makes sense to make the view available to the mutagens.
+        if (provider.getActiveView() == null || Arrays.asList(((BeanPropertyWriter) writer).getViews()).contains(provider.getActiveView())) {
             boolean mutated = false;
-            for (Mutagen mutagen : mutagens) {
-                mutated |= mutagen.serializeAsElement(bean, gen, provider, writer, indexIndicator);
+            if (indexIndicator.currentMutationIndex <= indexIndicator.targetMutationIndex) {
+                for (Mutagen mutagen : mutagens) {
+                    mutated |= mutagen.serializeAsElement(bean, gen, provider, writer, indexIndicator, groups);
+                }
             }
             if (!mutated) {
                 super.serializeAsElement(bean, gen, provider, writer);
@@ -43,14 +47,16 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
 
     @Override
     public void serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
-        // TODO: See if there is a better way to check for view.
+        // TODO: See if it makes sense to make the view available to the mutagens.
         if (provider.getActiveView() == null || Arrays.asList(((BeanPropertyWriter) writer).getViews()).contains(provider.getActiveView())) {
             boolean mutated = false;
-            for (Mutagen mutagen : mutagens) {
-                mutated |= mutagen.serializeAsField(bean, gen, provider, writer, indexIndicator);
-            }
-            if (!mutated) {
-                mutated = serializeDirectProps(bean, gen, provider, writer);
+            if (indexIndicator.currentMutationIndex <= indexIndicator.targetMutationIndex) {
+                for (Mutagen mutagen : mutagens) {
+                    mutated |= mutagen.serializeAsField(bean, gen, provider, writer, indexIndicator, groups);
+                }
+                if (!mutated) {
+                    mutated = serializeDirectProps(bean, gen, provider, writer, groups);
+                }
             }
             if (!mutated) {
                 super.serializeAsField(bean, gen, provider, writer);
@@ -58,7 +64,7 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
         }
     }
 
-    protected boolean serializeDirectProps(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer) throws Exception {
+    protected boolean serializeDirectProps(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, Class<?>[] groups) throws Exception {
         boolean mutated = false;
         JavaType propType = writer.getType();
         JavaType contentType = propType.getContentType();
@@ -67,7 +73,7 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
                 Object prop = ((BeanPropertyWriter) writer).get(bean);
                 if (prop != null) {
                     for (Mutagen mutagen : mutagens) {
-                        mutated |= mutagen.serializeAsPrimitiveArray(prop, gen, provider, writer, indexIndicator, true);
+                        mutated |= mutagen.serializeAsPrimitiveArray(prop, gen, provider, writer, indexIndicator, true, groups);
                     }
                 }
             }
@@ -76,7 +82,7 @@ public class CompositeFilter extends SimpleBeanPropertyFilter {
                 Collection<?> prop = (Collection<?>) ((BeanPropertyWriter) writer).get(bean);
                 if (prop != null) {
                     for (Mutagen mutagen : mutagens) {
-                        mutated |= mutagen.serializeAsPrimitiveCollection(prop, gen, provider, writer, indexIndicator, true);
+                        mutated |= mutagen.serializeAsPrimitiveCollection(prop, gen, provider, writer, indexIndicator, true, groups);
                     }
                 }
             }

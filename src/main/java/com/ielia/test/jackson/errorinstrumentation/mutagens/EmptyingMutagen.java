@@ -8,33 +8,35 @@ import com.fasterxml.jackson.databind.ser.std.MapProperty;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
+// import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
 public class EmptyingMutagen implements Mutagen {
     @Override
-    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) {
-        return false; // serializeAsPotentialField(gen, writer.getType(), writer.getName(), indicator, (g, name) -> {});
+    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) {
+        return false; // serializeAsPotentialField(gen, writer.getType(), writer.getName(), indicator, groups, (g, name) -> {});
     }
 
     @Override
-    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
+    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
         JavaType type = writer instanceof MapProperty ? writer.getType().getContentType() : writer.getType();
-        return trySerializeAsField(gen, type, writer.getName(), indicator, (g, name) -> { try { g.writeFieldName(name); } catch (Exception e) { throw new RuntimeException(e); }});
+        return trySerializeAsField(gen, type, writer.getName(), indicator, groups, (g, name) -> { try { g.writeFieldName(name); } catch (Exception e) { throw new RuntimeException(e); }});
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws IOException {
-        return trySerializeAsPrimitiveCollectionLike(gen, writer, Array.getLength(array), indicator, isField);
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField, Class<?>... groups) throws IOException {
+        // return trySerializeAsPrimitiveCollectionLike(gen, writer, Array.getLength(array), indicator, isField, groups);
+        return false;
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws IOException {
-        return trySerializeAsPrimitiveCollectionLike(gen, writer, collection.size(), indicator, isField);
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField, Class<?>... groups) throws IOException {
+        // return trySerializeAsPrimitiveCollectionLike(gen, writer, collection.size(), indicator, isField, groups);
+        return false;
     }
 
-    protected boolean trySerializeAsPrimitiveCollectionLike(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
+    protected boolean trySerializeAsPrimitiveCollectionLike(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean isField, Class<?>[] groups) throws IOException {
         JavaType type = writer.getType().getContentType();
         if (type.isTypeOrSubTypeOf(CharSequence.class) && length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             if (isField) { gen.writeFieldName(writer.getName()); }
@@ -49,8 +51,8 @@ public class EmptyingMutagen implements Mutagen {
         return false;
     }
 
-    protected boolean trySerializeAsField(JsonGenerator gen, JavaType type, String name, MutationIndexIndicator indicator, BiConsumer<JsonGenerator, String> handleFieldName) throws Exception {
-        // TODO: Check for @NotEmpty @NotBlank @Size
+    protected boolean trySerializeAsField(JsonGenerator gen, JavaType type, String name, MutationIndexIndicator indicator, Class<?>[] groups, BiConsumer<JsonGenerator, String> handleFieldName) throws Exception {
+        // TODO: Check for @NotEmpty @NotBlank
         boolean result = false;
         if (type.isTypeOrSubTypeOf(CharSequence.class)) {
             if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {

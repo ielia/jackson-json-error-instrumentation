@@ -6,19 +6,17 @@ import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 
 import javax.validation.constraints.NotNull;
-import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.Collection;
 
 public class NullifierMutagen implements Mutagen {
     @Override
-    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
+    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) {
         return false;
     }
 
     @Override
-    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        if ((writer.getType().isPrimitive() || writer.getAnnotation(NotNull.class) != null) && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
+    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
+        if ((writer.getType().isPrimitive() || annotationApplies(writer, groups)) && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             gen.writeNullField(writer.getName());
             indicator.setDescription("Nullified value.");
             indicator.setMutagen(this.getClass());
@@ -29,15 +27,34 @@ public class NullifierMutagen implements Mutagen {
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
-        return trySerializeAsPrimitiveCollectionLike(writer.getName(), gen, Array.getLength(array), indicator, isField);
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField, Class<?>... groups) throws Exception {
+        return false;
+        // return trySerializeAsPrimitiveCollectionLike(writer.getName(), gen, Array.getLength(array), indicator, isField);
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
-        return trySerializeAsPrimitiveCollectionLike(writer.getName(), gen, collection.size(), indicator, isField);
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField, Class<?>... groups) throws Exception {
+        return false;
+        // return trySerializeAsPrimitiveCollectionLike(writer.getName(), gen, collection.size(), indicator, isField);
     }
 
+    protected boolean annotationApplies(PropertyWriter writer, Class<?>[] groups) {
+        NotNull annotation = writer.getAnnotation(NotNull.class);
+        boolean applies = annotation != null && groupsOverlap(annotation.groups(), groups);
+        if (!applies) {
+            NotNull.List listAnnotation = writer.getAnnotation(NotNull.List.class);
+            if (listAnnotation != null && listAnnotation.value() != null) {
+                NotNull[] annotations = listAnnotation.value();
+                for (int i = 0, len = annotations.length; i < len && !applies; ++i) {
+                    annotation = annotations[i];
+                    applies = annotation != null && groupsOverlap(annotation.groups(), groups);
+                }
+            }
+        }
+        return applies;
+    }
+
+    /*
     protected boolean trySerializeAsPrimitiveCollectionLike(String fieldName, JsonGenerator gen, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
         if (length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             if (isField) { gen.writeFieldName(fieldName); }
@@ -51,4 +68,5 @@ public class NullifierMutagen implements Mutagen {
         }
         return false;
     }
+    */
 }

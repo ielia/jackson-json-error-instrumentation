@@ -1,23 +1,19 @@
 package com.ielia.test.jackson.errorinstrumentation.mutagens;
 
-import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
-import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 
 import javax.validation.constraints.DecimalMax;
 import javax.validation.constraints.Max;
+import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-public class MaxMutagen implements Mutagen {
-    protected Map<Class<?>, BigDecimal> MAX_VALUES_BY_TYPE = new HashMap<Class<?>, BigDecimal>() {{
+public class MaxMutagen extends AbstractMaxMinMutagen {
+    protected Map<Class<?>, BigDecimal> MAX_VALUES_BY_TYPE = new HashMap<>() {{
         put(AtomicInteger.class, BigDecimal.valueOf(Integer.MAX_VALUE));
         put(AtomicLong.class, BigDecimal.valueOf(Long.MAX_VALUE));
         put(Byte.class, BigDecimal.valueOf(Byte.MAX_VALUE));
@@ -35,41 +31,24 @@ public class MaxMutagen implements Mutagen {
     }};
 
     @Override
-    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        return false;
+    protected Annotation[] getAnnotations(PropertyWriter writer, Class<?>[] groups) {
+        TreeMap<BigDecimal, Annotation> annotations = new TreeMap<>();
+        addAnnotations(annotations, writer, groups, DecimalMax.class, DecimalMax.List.class, DecimalMax::groups, DecimalMax.List::value, m -> new BigDecimal(m.value()));
+        addAnnotations(annotations, writer, groups, Max.class, Max.List.class, Max::groups, Max.List::value, m -> BigDecimal.valueOf(m.value()));
+        return annotations.size() == 0 ? new Annotation[0] : new Annotation[]{annotations.lastEntry().getValue()};
     }
 
     @Override
-    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
-        Max max = writer.getAnnotation(Max.class);
-        DecimalMax dMax = writer.getAnnotation(DecimalMax.class);
-        Class<?> propClass = writer.getType().getRawClass();
-        if ((max != null || dMax != null || (propClass.isPrimitive() && propClass != boolean.class && propClass != char.class) ||
-                (Number.class.isAssignableFrom(propClass) && BigDecimal.class.isAssignableFrom(propClass) && BigInteger.class.isAssignableFrom(propClass)))
-                && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            BigDecimal maxValue = max == null
-                    ? dMax == null
-                        ? MAX_VALUES_BY_TYPE.get(propClass)
-                        : new BigDecimal(dMax.value())
-                    : new BigDecimal(max.value());
-            gen.writeFieldName(writer.getName());
-            BigDecimal newValue = maxValue.add(BigDecimal.ONE);
-            gen.writeRawValue(newValue.toString());
-            indicator.setDescription("Changed value from " + ((BeanPropertyWriter) writer).get(bean) + " to " + newValue + ".");
-            indicator.setMutagen(this.getClass());
-            indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
-            return true;
+    protected BigDecimal getReplacementValue(Annotation[] annotations, Class<?> propClass) {
+        BigDecimal maxValue;
+        if (annotations.length == 0) {
+            maxValue = MAX_VALUES_BY_TYPE.get(propClass);
+        } else {
+            Annotation annotation = annotations[0];
+            maxValue = annotation instanceof Max
+                    ? BigDecimal.valueOf(((Max) annotation).value())
+                    : new BigDecimal(((DecimalMax) annotation).value());
         }
-        return false;
-    }
-
-    @Override
-    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField) throws Exception {
-        return false; // TODO: See if there is any max spec for array elements.
-    }
-
-    @Override
-    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField) throws Exception {
-        return false; // TODO: See if there is any max spec for collection elements.
+        return maxValue.add(BigDecimal.ONE);
     }
 }

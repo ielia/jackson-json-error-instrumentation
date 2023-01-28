@@ -17,8 +17,11 @@ import com.ielia.test.jackson.errorinstrumentation.mutagens.Mutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.NullifierMutagen;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -38,6 +41,7 @@ public class JSONMutationInstrumentator {
     protected final Object bean;
     protected final Mutagen[] mutagens;
     protected final Map<Class<?>, Class<?>> mixins;
+    protected Class<?>[] groups;
     protected Class<?> view;
 
     public JSONMutationInstrumentator(Object bean) {
@@ -53,6 +57,11 @@ public class JSONMutationInstrumentator {
 
     public JSONMutationInstrumentator addMixIn(Class<?> target, Class<?> mixIn) {
         mixins.put(target, mixIn);
+        return this;
+    }
+
+    public JSONMutationInstrumentator withGroups(Class<?>... groups) {
+        this.groups = groups;
         return this;
     }
 
@@ -89,7 +98,7 @@ public class JSONMutationInstrumentator {
     // @SuppressWarnings({"unchecked", "rawtypes"})
     protected ObjectWriter getWriter(ObjectMapper mapper, MutationIndexIndicator indexIndicator) throws JsonMappingException {
         SimpleFilterProvider filterProvider = new SimpleFilterProvider();
-        filterProvider.addFilter(CompositeFilter.FILTER_ID, new CompositeFilter(indexIndicator, mutagens));
+        filterProvider.addFilter(CompositeFilter.FILTER_ID, new CompositeFilter(indexIndicator, groups, mutagens));
         /*
         SimpleSerializers serializers = new SimpleSerializers();
         Class<?>[] types = new Class<?>[] {

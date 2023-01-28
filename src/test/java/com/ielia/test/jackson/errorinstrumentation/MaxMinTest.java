@@ -1,6 +1,5 @@
 package com.ielia.test.jackson.errorinstrumentation;
 
-import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.ielia.test.jackson.errorinstrumentation.beans.MaxMinMembersDTO;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.MaxMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.MinMutagen;

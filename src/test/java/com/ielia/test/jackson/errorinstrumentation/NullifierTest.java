@@ -28,11 +28,11 @@ public class NullifierTest extends TestNGTest {
                 new Object[] { new NotNullMethodDTO(), new Mutation[] { new Mutation(0, "/value", NullifierMutagen.class, "Nullified value.", "{\"value\":null}") }},
                 new Object[] { new NotNullArrayFieldDTO(), new Mutation[] {
                         new Mutation(0, "/values", NullifierMutagen.class, "Nullified value.", "{\"values\":null}"),
-                        new Mutation(1, "/values[*]", NullifierMutagen.class, "Nullified all values of the collection.", "{\"values\":[null,null,null]}"), // TODO: See if this is actually correct.
+                        // new Mutation(1, "/values[*]", NullifierMutagen.class, "Nullified all values of the collection.", "{\"values\":[null,null,null]}"),
                 }},
                 new Object[] { new NotNullListFieldDTO(), new Mutation[] {
                         new Mutation(0, "/values", NullifierMutagen.class, "Nullified value.", "{\"values\":null}"),
-                        new Mutation(1, "/values[*]", NullifierMutagen.class, "Nullified all values of the collection.", "{\"values\":[null,null,null]}"), // TODO: See if this is actually correct.
+                        // new Mutation(1, "/values[*]", NullifierMutagen.class, "Nullified all values of the collection.", "{\"values\":[null,null,null]}"),
                 }},
                 new Object[] { new NotNullMapFieldDTO(), new Mutation[] {
                         new Mutation(0, "/values", NullifierMutagen.class, "Nullified value.", "{\"values\":null}"),

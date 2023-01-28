@@ -11,22 +11,22 @@ import java.util.Collection;
 
 public class DataTypeMutagen implements Mutagen {
     @Override
-    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
+    public boolean serializeAsElement(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
         return tryWritingValue(gen, writer, indicator, false);
     }
 
     @Override
-    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator) throws Exception {
+    public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
         return tryWritingValue(gen, writer, indicator, true);
     }
 
     @Override
-    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
+    public boolean serializeAsPrimitiveArray(Object array, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField, Class<?>... groups) throws Exception {
         return tryWritingArray(gen, writer, Array.getLength(array), indicator, isField);
     }
 
     @Override
-    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField) throws Exception {
+    public boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, boolean isField, Class<?>... groups) throws Exception {
         return tryWritingArray(gen, writer, collection.size(), indicator, isField);
     }
 
@@ -37,7 +37,7 @@ public class DataTypeMutagen implements Mutagen {
         return type.toCanonical();
     }
 
-    protected boolean tryWritingArray(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean withFieldName) throws Exception {
+    protected boolean tryWritingArray(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean withFieldName, Class<?>... groups) throws Exception {
         if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             JavaType propType = writer.getType();
             if (withFieldName) { gen.writeFieldName(writer.getName()); }
@@ -61,7 +61,7 @@ public class DataTypeMutagen implements Mutagen {
         return false;
     }
 
-    protected boolean tryWritingValue(JsonGenerator gen, PropertyWriter writer, MutationIndexIndicator indicator, boolean withFieldName) throws Exception {
+    protected boolean tryWritingValue(JsonGenerator gen, PropertyWriter writer, MutationIndexIndicator indicator, boolean withFieldName, Class<?>... groups) throws Exception {
         if (indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             JavaType propType = writer.getType();
             if (withFieldName) { gen.writeFieldName(writer.getName()); }
