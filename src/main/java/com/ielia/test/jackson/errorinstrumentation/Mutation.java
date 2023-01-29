@@ -47,7 +47,7 @@ public class Mutation {
     }
 
     public String toString() {
-        return String.format("Mutation { idx=%d, path=\"%s\", mutagen=%s dsc=\"%s\", JSON=\n%s\n }",
-                mutationIndex, path, mutagen.getCanonicalName(), description, json);
+        return String.format("Mutation { idx: %d, path: \"%s\", mutagen: \"%s\" dsc: \"%s\", JSON=%s }",
+                mutationIndex, path, mutagen.getCanonicalName(), description.replace("\\", "\\\\").replace("\"", "\\\""), json);
     }
 }

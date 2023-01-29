@@ -42,6 +42,7 @@ public class FooServiceImpl implements FooService {
 
     @Override
     public boolean checkFoo(@Valid FooDTO foo) {
+        // FIXME: Make validation work.
         // return validator.validate(foo).size() == 0;
         return false;
     }

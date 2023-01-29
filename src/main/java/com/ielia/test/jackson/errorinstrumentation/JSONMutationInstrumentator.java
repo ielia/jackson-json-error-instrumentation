@@ -17,11 +17,8 @@ import com.ielia.test.jackson.errorinstrumentation.mutagens.Mutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.NullifierMutagen;
 
 import java.lang.reflect.Array;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -95,41 +92,10 @@ public class JSONMutationInstrumentator {
         }
     }
 
-    // @SuppressWarnings({"unchecked", "rawtypes"})
     protected ObjectWriter getWriter(ObjectMapper mapper, MutationIndexIndicator indexIndicator) throws JsonMappingException {
         SimpleFilterProvider filterProvider = new SimpleFilterProvider();
         filterProvider.addFilter(CompositeFilter.FILTER_ID, new CompositeFilter(indexIndicator, groups, mutagens));
-        /*
-        SimpleSerializers serializers = new SimpleSerializers();
-        Class<?>[] types = new Class<?>[] {
-                boolean[].class,
-                byte[].class,
-                char[].class,
-                short[].class,
-                int[].class,
-                long[].class,
-                float[].class,
-                double[].class,
-                // ArrayList.class,
-        };
-        SerializationConfig serializationConfig = mapper.getSerializationConfig();
-        SerializerFactory serializerFactory = mapper.getSerializerFactory();
-        SerializerProvider serializerProvider = mapper.getSerializerProvider();
-        for (Class<?> type : types) {
-            JavaType javaType = mapper.constructType(type);
-            TypeSerializer typeSerializer = serializerFactory.createTypeSerializer(serializationConfig, javaType);
-            JsonSerializer serializer = new ObjectArraySerializer(javaType.getContentType(), false, typeSerializer, null);
-            serializers.addSerializer(type, serializer);
-        }
-        for (Class<?> type : types) {
-            serializers.addSerializer(OverrideStdArraySerializers.findStandardImpl(type));
-        }
-        */
         mapper.setFilterProvider(filterProvider)
-                // .setSerializerFactory(PatchedSerializerFactory.instance)
-                // .setSerializerFactory(BeanSerializerFactory.instance.withConfig(
-                //         new SerializerFactoryConfig().withAdditionalSerializers(serializers))
-                // )
                 .addMixIn(Array.class, CompositeFilter.Mixin.class)
                 .addMixIn(Collection.class, CompositeFilter.Mixin.class)
                 .addMixIn(Map.class, CompositeFilter.Mixin.class)
@@ -153,10 +119,7 @@ public class JSONMutationInstrumentator {
         // TODO: Use the non-deprecated version
         if (view != null) {
             mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
-            // mapper.setConfig(mapper.getSerializationConfig().withView(view));
         }
-        // mapper.setSerializationInclusion(JsonInclude.Include.CUSTOM);
         return mapper.writerWithView(view);
-        // return mapper.writer();
     }
 }

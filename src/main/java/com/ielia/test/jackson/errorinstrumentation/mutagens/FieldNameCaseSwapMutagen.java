@@ -11,8 +11,6 @@ public class FieldNameCaseSwapMutagen extends AbstractFieldNameMutagen {
 
     @Override
     protected String mutateFieldName(PropertyWriter writer) {
-        // FIXME: Serialize key correctly. See MapSerializer and MapProperty.
-        // if (writer instanceof MapProperty) { ... }
         return StringUtils.swapCase(writer.getName());
     }
 }

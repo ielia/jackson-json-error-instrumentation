@@ -6,7 +6,6 @@ import com.ielia.test.jackson.errorinstrumentation.mutagens.MinMutagen;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-// FIXME: Add tests for objects inside arrays and collections.
 public class MaxMinTest extends TestNGTest {
     @Test(groups = "unit")
     public void testMax() {

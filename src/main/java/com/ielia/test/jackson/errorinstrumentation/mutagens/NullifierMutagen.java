@@ -54,19 +54,17 @@ public class NullifierMutagen implements Mutagen {
         return applies;
     }
 
-    /*
-    protected boolean trySerializeAsPrimitiveCollectionLike(String fieldName, JsonGenerator gen, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
-        if (length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            if (isField) { gen.writeFieldName(fieldName); }
-            gen.writeStartArray();
-            for (int i = 0; i < length; ++i) { gen.writeNull(); }
-            gen.writeEndArray();
-            indicator.setDescription("Nullified all values of the collection.");
-            indicator.setMutagen(this.getClass());
-            indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
-            return true;
-        }
-        return false;
-    }
-    */
+    // protected boolean trySerializeAsPrimitiveCollectionLike(String fieldName, JsonGenerator gen, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
+    //     if (length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
+    //         if (isField) { gen.writeFieldName(fieldName); }
+    //         gen.writeStartArray();
+    //         for (int i = 0; i < length; ++i) { gen.writeNull(); }
+    //         gen.writeEndArray();
+    //         indicator.setDescription("Nullified all values of the collection.");
+    //         indicator.setMutagen(this.getClass());
+    //         indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
+    //         return true;
+    //     }
+    //     return false;
+    // }
 }

@@ -36,20 +36,20 @@ public class EmptyingMutagen implements Mutagen {
         return false;
     }
 
-    protected boolean trySerializeAsPrimitiveCollectionLike(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean isField, Class<?>[] groups) throws IOException {
-        JavaType type = writer.getType().getContentType();
-        if (type.isTypeOrSubTypeOf(CharSequence.class) && length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
-            if (isField) { gen.writeFieldName(writer.getName()); }
-            gen.writeStartArray();
-            for (int i = 0; i < length; ++i) { gen.writeString(""); }
-            gen.writeEndArray();
-            indicator.setDescription("Emptied collection.");
-            indicator.setMutagen(this.getClass());
-            indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
-            return true;
-        }
-        return false;
-    }
+    // protected boolean trySerializeAsPrimitiveCollectionLike(JsonGenerator gen, PropertyWriter writer, int length, MutationIndexIndicator indicator, boolean isField, Class<?>[] groups) throws IOException {
+    //     JavaType type = writer.getType().getContentType();
+    //     if (type.isTypeOrSubTypeOf(CharSequence.class) && length > 0 && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
+    //         if (isField) { gen.writeFieldName(writer.getName()); }
+    //         gen.writeStartArray();
+    //         for (int i = 0; i < length; ++i) { gen.writeString(""); }
+    //         gen.writeEndArray();
+    //         indicator.setDescription("Emptied collection.");
+    //         indicator.setMutagen(this.getClass());
+    //         indicator.setPath(gen.getOutputContext().pathAsPointer().toString() + "[*]");
+    //         return true;
+    //     }
+    //     return false;
+    // }
 
     protected boolean trySerializeAsField(JsonGenerator gen, JavaType type, String name, MutationIndexIndicator indicator, Class<?>[] groups, BiConsumer<JsonGenerator, String> handleFieldName) throws Exception {
         // TODO: Check for @NotEmpty @NotBlank

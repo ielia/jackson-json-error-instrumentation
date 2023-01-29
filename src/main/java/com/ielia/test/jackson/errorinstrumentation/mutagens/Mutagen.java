@@ -60,6 +60,7 @@ public interface Mutagen {
     boolean serializeAsPrimitiveCollection(Collection<?> collection, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indexIndicator, boolean isField, Class<?>... groups) throws Exception;
 
     /**
+     * TODO: See where to move this method to.
      * @param annotationGroups Constraint annotation groups.
      * @param validationGroups Validation groups.
      * @return True if either one of the arrays is empty or if the intersection is not empty, false otherwise.

@@ -6,23 +6,6 @@ import org.testng.Assert;
 import org.testng.annotations.Test;
 
 public class DataTypeChangeTest extends TestNGTest {
-    /*
-    public static class A {
-        public Map<String, Integer> x = new LinkedHashMap<>() {{ put("a", 11); put("b", 12); put("c", 13); }};
-        public int[] y = { 1, 2, 3 };
-    }
-
-    @Test(groups = "unit")
-    public void testA() {
-        String[] actual = new JSONMutationInstrumentator(new A(), new DataTypeMutagen()).getErrorCombinations().toArray(String[]::new);
-        Assert.assertEquals(actual, new String[] {
-                "{x:[\"abc\",2,3]}",
-                "{x:[1,\"abc\",3]}",
-                "{x:[1,2,\"abc\"]}",
-        });
-    }
-    */
-
     @Test(groups = "unit")
     public void testDataTypeChange() {
         // FIXME: Use individual, more manageable tests instead of this too big DataTypeChangeDTO class.

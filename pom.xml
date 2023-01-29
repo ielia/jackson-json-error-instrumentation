@@ -9,9 +9,8 @@
   <version>0.0.1</version>
 
   <name>jackson-json-error-instrumentation</name>
-  <description>A simple PoC for testing JSON APIs for bad formatting.</description>
-  <!-- FIXME change it to the project's website -->
-  <url>http://www.example.com</url>
+  <description>Jackson APIs for bad formatting.</description>
+  <url>https://github.com/ielia/jackson-json-error-instrumentation</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
