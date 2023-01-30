@@ -9,6 +9,7 @@ import java.util.Collection;
 
 public abstract class AbstractFieldNameMutagen implements Mutagen {
     protected abstract String getMutationDescription();
+
     protected abstract String mutateFieldName(PropertyWriter writer);
 
     @Override

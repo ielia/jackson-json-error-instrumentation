@@ -23,11 +23,25 @@ public class Mutation {
         this.json = json;
     }
 
-    public String getDescription() { return description; }
-    public String getJSON() { return json; }
-    public Class<? extends Mutagen> getMutagen() { return mutagen; }
-    public long getMutationIndex() { return mutationIndex; }
-    public String getPath() { return path; }
+    public String getDescription() {
+        return description;
+    }
+
+    public String getJSON() {
+        return json;
+    }
+
+    public Class<? extends Mutagen> getMutagen() {
+        return mutagen;
+    }
+
+    public long getMutationIndex() {
+        return mutationIndex;
+    }
+
+    public String getPath() {
+        return path;
+    }
 
     @Override
     public boolean equals(Object other) {

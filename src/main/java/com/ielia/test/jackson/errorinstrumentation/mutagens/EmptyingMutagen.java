@@ -8,7 +8,6 @@ import com.fasterxml.jackson.databind.ser.std.MapProperty;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 
 import java.io.IOException;
-// import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.function.BiConsumer;
 
@@ -21,7 +20,13 @@ public class EmptyingMutagen implements Mutagen {
     @Override
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
         JavaType type = writer instanceof MapProperty ? writer.getType().getContentType() : writer.getType();
-        return trySerializeAsField(gen, type, writer.getName(), indicator, groups, (g, name) -> { try { g.writeFieldName(name); } catch (Exception e) { throw new RuntimeException(e); }});
+        return trySerializeAsField(gen, type, writer.getName(), indicator, groups, (g, name) -> {
+            try {
+                g.writeFieldName(name);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     @Override

@@ -14,10 +14,27 @@ public class MutationIndexIndicator {
         this.targetMutationIndex = targetMutationIndex;
     }
 
-    public String getDescription() { return description; }
-    public Class<? extends Mutagen> getMutagen() { return mutagen; }
-    public String getPath() { return path; }
-    public void setDescription(String description) { this.description = description; }
-    public void setMutagen(Class<? extends Mutagen> mutagen) { this.mutagen = mutagen; }
-    public void setPath(String path) { this.path = path; }
+    public String getDescription() {
+        return description;
+    }
+
+    public Class<? extends Mutagen> getMutagen() {
+        return mutagen;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public void setMutagen(Class<? extends Mutagen> mutagen) {
+        this.mutagen = mutagen;
+    }
+
+    public void setPath(String path) {
+        this.path = path;
+    }
 }

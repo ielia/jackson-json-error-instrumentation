@@ -73,22 +73,22 @@ public class PastPresentFutureMutagen implements Mutagen {
     public PastPresentFutureMutagen(Clock clock, Locale locale) {
         this.clock = clock;
         this.locale = locale;
-        timePickersByType.put(java.util.Date.class, new Supplier[] { () -> getDate(getDaysAgo()), () -> getDate(getNow()), () -> getDate(getDaysLater()) });
-        timePickersByType.put(java.util.Calendar.class, new Supplier[] { () -> getCalendar(getDaysAgo()), () -> getCalendar(getNow()), () -> getCalendar(getDaysLater()) });
-        timePickersByType.put(java.time.Instant.class, new Supplier[] { () -> getDaysAgo().toInstant(), () -> getNow().toInstant(), () -> getDaysLater().toInstant() });
-        timePickersByType.put(java.time.LocalDate.class, new Supplier[] { () -> getDaysAgo().toLocalDate(), () -> getNow().toLocalDate(), () -> getDaysLater().toLocalDate() });
-        timePickersByType.put(java.time.LocalDateTime.class, new Supplier[] { () -> getDaysAgo().toLocalDateTime(), () -> getNow().toLocalDateTime(), () -> getDaysLater().toLocalDateTime() });
-        timePickersByType.put(java.time.LocalTime.class, new Supplier[] { () -> getMinutesAgo().toLocalTime(), () -> getNow().toLocalTime(), () -> getMinutesLater().toLocalTime() });
-        timePickersByType.put(java.time.MonthDay.class, new Supplier[] { () -> MonthDay.from(getDaysAgo()), () -> MonthDay.from(getNow()), () -> MonthDay.from(getDaysLater()) });
-        timePickersByType.put(java.time.OffsetDateTime.class, new Supplier[] { () -> getDaysAgo().toOffsetDateTime(), () -> getNow().toOffsetDateTime(), () -> getDaysLater().toOffsetDateTime() });
-        timePickersByType.put(java.time.OffsetTime.class, new Supplier[] { () -> getMinutesAgo().toOffsetDateTime().toOffsetTime(), () -> getNow().toOffsetDateTime().toOffsetTime(), () -> getMinutesLater().toOffsetDateTime().toOffsetTime() });
-        timePickersByType.put(java.time.Year.class, new Supplier[] { () -> Year.from(getYearsAgo()), () -> Year.from(getNow()), () -> Year.from(getYearsLater()) });
-        timePickersByType.put(java.time.YearMonth.class, new Supplier[] { () -> YearMonth.from(getMonthsAgo()), () -> YearMonth.from(getNow()), () -> YearMonth.from(getMonthsLater()) });
-        timePickersByType.put(java.time.ZonedDateTime.class, new Supplier[] { this::getDaysAgo, this::getNow, this::getDaysLater });
-        timePickersByType.put(java.time.chrono.HijrahDate.class, new Supplier[] { () -> HijrahDate.from(getDaysAgo()), () -> HijrahDate.from(getNow()), () -> HijrahDate.from(getDaysLater()) });
-        timePickersByType.put(java.time.chrono.JapaneseDate.class, new Supplier[] { () -> JapaneseDate.from(getDaysAgo()), () -> JapaneseDate.from(getNow()), () -> JapaneseDate.from(getDaysLater()) });
-        timePickersByType.put(java.time.chrono.MinguoDate.class, new Supplier[] { () -> MinguoDate.from(getDaysAgo()), () -> MinguoDate.from(getNow()), () -> MinguoDate.from(getDaysLater()) });
-        timePickersByType.put(java.time.chrono.ThaiBuddhistDate.class, new Supplier[] { () -> ThaiBuddhistDate.from(getDaysAgo()), () -> ThaiBuddhistDate.from(getNow()), () -> ThaiBuddhistDate.from(getDaysLater()) });
+        timePickersByType.put(java.util.Date.class, new Supplier[]{() -> getDate(getDaysAgo()), () -> getDate(getNow()), () -> getDate(getDaysLater())});
+        timePickersByType.put(java.util.Calendar.class, new Supplier[]{() -> getCalendar(getDaysAgo()), () -> getCalendar(getNow()), () -> getCalendar(getDaysLater())});
+        timePickersByType.put(java.time.Instant.class, new Supplier[]{() -> getDaysAgo().toInstant(), () -> getNow().toInstant(), () -> getDaysLater().toInstant()});
+        timePickersByType.put(java.time.LocalDate.class, new Supplier[]{() -> getDaysAgo().toLocalDate(), () -> getNow().toLocalDate(), () -> getDaysLater().toLocalDate()});
+        timePickersByType.put(java.time.LocalDateTime.class, new Supplier[]{() -> getDaysAgo().toLocalDateTime(), () -> getNow().toLocalDateTime(), () -> getDaysLater().toLocalDateTime()});
+        timePickersByType.put(java.time.LocalTime.class, new Supplier[]{() -> getMinutesAgo().toLocalTime(), () -> getNow().toLocalTime(), () -> getMinutesLater().toLocalTime()});
+        timePickersByType.put(java.time.MonthDay.class, new Supplier[]{() -> MonthDay.from(getDaysAgo()), () -> MonthDay.from(getNow()), () -> MonthDay.from(getDaysLater())});
+        timePickersByType.put(java.time.OffsetDateTime.class, new Supplier[]{() -> getDaysAgo().toOffsetDateTime(), () -> getNow().toOffsetDateTime(), () -> getDaysLater().toOffsetDateTime()});
+        timePickersByType.put(java.time.OffsetTime.class, new Supplier[]{() -> getMinutesAgo().toOffsetDateTime().toOffsetTime(), () -> getNow().toOffsetDateTime().toOffsetTime(), () -> getMinutesLater().toOffsetDateTime().toOffsetTime()});
+        timePickersByType.put(java.time.Year.class, new Supplier[]{() -> Year.from(getYearsAgo()), () -> Year.from(getNow()), () -> Year.from(getYearsLater())});
+        timePickersByType.put(java.time.YearMonth.class, new Supplier[]{() -> YearMonth.from(getMonthsAgo()), () -> YearMonth.from(getNow()), () -> YearMonth.from(getMonthsLater())});
+        timePickersByType.put(java.time.ZonedDateTime.class, new Supplier[]{this::getDaysAgo, this::getNow, this::getDaysLater});
+        timePickersByType.put(java.time.chrono.HijrahDate.class, new Supplier[]{() -> HijrahDate.from(getDaysAgo()), () -> HijrahDate.from(getNow()), () -> HijrahDate.from(getDaysLater())});
+        timePickersByType.put(java.time.chrono.JapaneseDate.class, new Supplier[]{() -> JapaneseDate.from(getDaysAgo()), () -> JapaneseDate.from(getNow()), () -> JapaneseDate.from(getDaysLater())});
+        timePickersByType.put(java.time.chrono.MinguoDate.class, new Supplier[]{() -> MinguoDate.from(getDaysAgo()), () -> MinguoDate.from(getNow()), () -> MinguoDate.from(getDaysLater())});
+        timePickersByType.put(java.time.chrono.ThaiBuddhistDate.class, new Supplier[]{() -> ThaiBuddhistDate.from(getDaysAgo()), () -> ThaiBuddhistDate.from(getNow()), () -> ThaiBuddhistDate.from(getDaysLater())});
     }
 
     @Override
@@ -162,6 +162,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Year before last ("2 years ago"), same month/day/time as `now()`.
      */
     protected ZonedDateTime getYearsAgo() {
@@ -170,6 +171,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Month before last ("2 months ago"), same day/time as `now()`.
      */
     protected ZonedDateTime getMonthsAgo() {
@@ -178,6 +180,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Day before yesterday, same time as `now()`.
      */
     protected ZonedDateTime getDaysAgo() {
@@ -186,6 +189,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Minute before last ("2 minutes ago").
      */
     protected ZonedDateTime getMinutesAgo() {
@@ -194,6 +198,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Present date-time.
      */
     protected ZonedDateTime getNow() {
@@ -202,6 +207,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Minute after next ("in 2 minutes").
      */
     protected ZonedDateTime getMinutesLater() {
@@ -210,6 +216,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Day after tomorrow, same time as `now()`.
      */
     protected ZonedDateTime getDaysLater() {
@@ -218,6 +225,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Month after next ("in 2 months"), same day/time as `now()`.
      */
     protected ZonedDateTime getMonthsLater() {
@@ -226,6 +234,7 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     /**
      * Note: locale is ignored
+     *
      * @return Year after next ("in 2 years"), same month/day/time as `now()`.
      */
     protected ZonedDateTime getYearsLater() {
