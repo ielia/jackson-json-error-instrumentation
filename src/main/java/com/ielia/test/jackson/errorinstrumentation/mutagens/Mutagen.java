@@ -5,8 +5,10 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 
+import java.lang.annotation.Annotation;
 import java.util.Collection;
 import java.util.Set;
+import java.util.function.Function;
 
 public interface Mutagen {
     /**
@@ -76,5 +78,38 @@ public interface Mutagen {
             }
         }
         return false;
+    }
+
+    /**
+     * TODO: See where to move this method to.
+     * @param annotationClass Constraint annotation class.
+     * @param getGroups Constraint annotation groups getter.
+     * @param listAnnotationClass Constraint annotation list class.
+     * @param getSubAnnotations Constraint list sub annotations getter.
+     * @param writer Jackson property writer.
+     * @param groups Validation groups.
+     * @return True if field is annotated, false otherwise.
+     * @param <A> Constraint annotation type.
+     * @param <L> Constraint list annotation type.
+     */
+    default <A extends Annotation, L extends Annotation> A getAppliedAnnotation(
+            Class<A> annotationClass, Function<A, Class<?>[]> getGroups,
+            Class<L> listAnnotationClass, Function<L, A[]> getSubAnnotations,
+            PropertyWriter writer, Class<?>[] groups) {
+        A annotation = writer.getAnnotation(annotationClass);
+        boolean applies = annotation != null && groupsOverlap(getGroups.apply(annotation), groups);
+        if (!applies) {
+            L listAnnotation = writer.getAnnotation(listAnnotationClass);
+            if (listAnnotation != null) {
+                A[] annotations = getSubAnnotations.apply(listAnnotation);
+                if (annotations != null) {
+                    for (int j = 0, len = annotations.length; j < len && !applies; ++j) {
+                        annotation = annotations[j];
+                        applies = annotation != null && groupsOverlap(getGroups.apply(annotation), groups);
+                    }
+                }
+            }
+        }
+        return applies ? annotation : null;
     }
 }

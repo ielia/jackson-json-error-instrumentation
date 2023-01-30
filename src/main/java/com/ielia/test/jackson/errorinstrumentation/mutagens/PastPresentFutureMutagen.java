@@ -3,7 +3,6 @@ package com.ielia.test.jackson.errorinstrumentation.mutagens;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.BeanPropertyWriter;
 import com.fasterxml.jackson.databind.ser.PropertyWriter;
 import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
@@ -12,7 +11,6 @@ import javax.validation.constraints.Future;
 import javax.validation.constraints.FutureOrPresent;
 import javax.validation.constraints.Past;
 import javax.validation.constraints.PastOrPresent;
-import java.lang.annotation.Annotation;
 import java.time.Clock;
 import java.time.MonthDay;
 import java.time.Year;
@@ -30,36 +28,20 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.TimeZone;
-import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class PastPresentFutureMutagen implements Mutagen {
     public enum Timeframe {
-        FUTURE_OR_PRESENT(FutureOrPresent.class, a -> ((FutureOrPresent) a).groups(), FutureOrPresent.List.class, l -> ((FutureOrPresent.List) l).value()),
-        PAST_OR_PRESENT(PastOrPresent.class, a -> ((PastOrPresent) a).groups(), PastOrPresent.List.class, l -> ((PastOrPresent.List) l).value()),
-        PAST(Past.class, a -> ((Past) a).groups(), Past.List.class, l -> ((Past.List) l).value()),
-        FUTURE(Future.class, a -> ((Future) a).groups(), Future.List.class, l -> ((Future.List) l).value()),
-        PRESENT(null, null, null, null);
-
-        public final Class<? extends Annotation> annotation;
-        public final Class<? extends Annotation> listAnnotation;
-        public final Function<Annotation, Class<?>[]> getGroups;
-        public final Function<Annotation, Annotation[]> getSubAnnotations;
-
-        Timeframe(Class<? extends Annotation> annotation, Function<Annotation, Class<?>[]> groupsGetter,
-                  Class<? extends Annotation> listAnnotation, Function<Annotation, Annotation[]> subAnnotationsGetter) {
-            this.annotation = annotation;
-            this.listAnnotation = listAnnotation;
-            getGroups = groupsGetter;
-            getSubAnnotations = subAnnotationsGetter;
-        }
+        PAST,
+        PRESENT,
+        FUTURE,
     }
 
     protected Clock clock;
     protected Locale locale;
 
     /**
-     * Picker functions: 0 = Past, 1 = Future, 2 = Present (i.e., Timeframe.X.ordinal() - 2)
+     * Picker functions: 0 = Past, 1 = Future, 2 = Present (i.e., Timeframe.X.ordinal())
      */
     protected Map<Class<?>, Supplier<Object>[]> timePickersByType = new HashMap<>();
 
@@ -91,22 +73,22 @@ public class PastPresentFutureMutagen implements Mutagen {
     public PastPresentFutureMutagen(Clock clock, Locale locale) {
         this.clock = clock;
         this.locale = locale;
-        timePickersByType.put(java.util.Date.class, new Supplier[] { () -> getDate(getDaysAgo()), () -> getDate(getDaysLater()), () -> getDate(getNow()) });
-        timePickersByType.put(java.util.Calendar.class, new Supplier[] { () -> getCalendar(getDaysAgo()), () -> getCalendar(getDaysLater()), () -> getCalendar(getNow()) });
-        timePickersByType.put(java.time.Instant.class, new Supplier[] { () -> getDaysAgo().toInstant(), () -> getDaysLater().toInstant(), () -> getNow().toInstant() });
-        timePickersByType.put(java.time.LocalDate.class, new Supplier[] { () -> getDaysAgo().toLocalDate(), () -> getDaysLater().toLocalDate(), () -> getNow().toLocalDate() });
-        timePickersByType.put(java.time.LocalDateTime.class, new Supplier[] { () -> getDaysAgo().toLocalDateTime(), () -> getDaysLater().toLocalDateTime(), () -> getNow().toLocalDateTime() });
-        timePickersByType.put(java.time.LocalTime.class, new Supplier[] { () -> getMinutesAgo().toLocalTime(), () -> getMinutesLater().toLocalTime(), () -> getNow().toLocalTime() });
-        timePickersByType.put(java.time.MonthDay.class, new Supplier[] { () -> MonthDay.from(getDaysAgo()), () -> MonthDay.from(getDaysLater()), () -> MonthDay.from(getNow()) });
-        timePickersByType.put(java.time.OffsetDateTime.class, new Supplier[] { () -> getDaysAgo().toOffsetDateTime(), () -> getDaysLater().toOffsetDateTime(), () -> getNow().toOffsetDateTime() });
-        timePickersByType.put(java.time.OffsetTime.class, new Supplier[] { () -> getMinutesAgo().toOffsetDateTime().toOffsetTime(), () -> getMinutesLater().toOffsetDateTime().toOffsetTime(), () -> getNow().toOffsetDateTime().toOffsetTime() });
-        timePickersByType.put(java.time.Year.class, new Supplier[] { () -> Year.from(getYearsAgo()), () -> Year.from(getYearsLater()), () -> Year.from(getNow()) });
-        timePickersByType.put(java.time.YearMonth.class, new Supplier[] { () -> YearMonth.from(getMonthsAgo()), () -> YearMonth.from(getMonthsLater()), () -> YearMonth.from(getNow()) });
-        timePickersByType.put(java.time.ZonedDateTime.class, new Supplier[] { this::getDaysAgo, this::getDaysLater, this::getNow });
-        timePickersByType.put(java.time.chrono.HijrahDate.class, new Supplier[] { () -> HijrahDate.from(getDaysAgo()), () -> HijrahDate.from(getDaysLater()), () -> HijrahDate.from(getNow()) });
-        timePickersByType.put(java.time.chrono.JapaneseDate.class, new Supplier[] { () -> JapaneseDate.from(getDaysAgo()), () -> JapaneseDate.from(getDaysLater()), () -> JapaneseDate.from(getNow()) });
-        timePickersByType.put(java.time.chrono.MinguoDate.class, new Supplier[] { () -> MinguoDate.from(getDaysAgo()), () -> MinguoDate.from(getDaysLater()), () -> MinguoDate.from(getNow()) });
-        timePickersByType.put(java.time.chrono.ThaiBuddhistDate.class, new Supplier[] { () -> ThaiBuddhistDate.from(getDaysAgo()), () -> ThaiBuddhistDate.from(getDaysLater()), () -> ThaiBuddhistDate.from(getNow()) });
+        timePickersByType.put(java.util.Date.class, new Supplier[] { () -> getDate(getDaysAgo()), () -> getDate(getNow()), () -> getDate(getDaysLater()) });
+        timePickersByType.put(java.util.Calendar.class, new Supplier[] { () -> getCalendar(getDaysAgo()), () -> getCalendar(getNow()), () -> getCalendar(getDaysLater()) });
+        timePickersByType.put(java.time.Instant.class, new Supplier[] { () -> getDaysAgo().toInstant(), () -> getNow().toInstant(), () -> getDaysLater().toInstant() });
+        timePickersByType.put(java.time.LocalDate.class, new Supplier[] { () -> getDaysAgo().toLocalDate(), () -> getNow().toLocalDate(), () -> getDaysLater().toLocalDate() });
+        timePickersByType.put(java.time.LocalDateTime.class, new Supplier[] { () -> getDaysAgo().toLocalDateTime(), () -> getNow().toLocalDateTime(), () -> getDaysLater().toLocalDateTime() });
+        timePickersByType.put(java.time.LocalTime.class, new Supplier[] { () -> getMinutesAgo().toLocalTime(), () -> getNow().toLocalTime(), () -> getMinutesLater().toLocalTime() });
+        timePickersByType.put(java.time.MonthDay.class, new Supplier[] { () -> MonthDay.from(getDaysAgo()), () -> MonthDay.from(getNow()), () -> MonthDay.from(getDaysLater()) });
+        timePickersByType.put(java.time.OffsetDateTime.class, new Supplier[] { () -> getDaysAgo().toOffsetDateTime(), () -> getNow().toOffsetDateTime(), () -> getDaysLater().toOffsetDateTime() });
+        timePickersByType.put(java.time.OffsetTime.class, new Supplier[] { () -> getMinutesAgo().toOffsetDateTime().toOffsetTime(), () -> getNow().toOffsetDateTime().toOffsetTime(), () -> getMinutesLater().toOffsetDateTime().toOffsetTime() });
+        timePickersByType.put(java.time.Year.class, new Supplier[] { () -> Year.from(getYearsAgo()), () -> Year.from(getNow()), () -> Year.from(getYearsLater()) });
+        timePickersByType.put(java.time.YearMonth.class, new Supplier[] { () -> YearMonth.from(getMonthsAgo()), () -> YearMonth.from(getNow()), () -> YearMonth.from(getMonthsLater()) });
+        timePickersByType.put(java.time.ZonedDateTime.class, new Supplier[] { this::getDaysAgo, this::getNow, this::getDaysLater });
+        timePickersByType.put(java.time.chrono.HijrahDate.class, new Supplier[] { () -> HijrahDate.from(getDaysAgo()), () -> HijrahDate.from(getNow()), () -> HijrahDate.from(getDaysLater()) });
+        timePickersByType.put(java.time.chrono.JapaneseDate.class, new Supplier[] { () -> JapaneseDate.from(getDaysAgo()), () -> JapaneseDate.from(getNow()), () -> JapaneseDate.from(getDaysLater()) });
+        timePickersByType.put(java.time.chrono.MinguoDate.class, new Supplier[] { () -> MinguoDate.from(getDaysAgo()), () -> MinguoDate.from(getNow()), () -> MinguoDate.from(getDaysLater()) });
+        timePickersByType.put(java.time.chrono.ThaiBuddhistDate.class, new Supplier[] { () -> ThaiBuddhistDate.from(getDaysAgo()), () -> ThaiBuddhistDate.from(getNow()), () -> ThaiBuddhistDate.from(getDaysLater()) });
     }
 
     @Override
@@ -129,7 +111,7 @@ public class PastPresentFutureMutagen implements Mutagen {
         }
         if (timePickers == null) { return false; }
 
-        Object newValue = timePickers[timeframe.ordinal() - 2].get();
+        Object newValue = timePickers[timeframe.ordinal()].get();
         if (newValue == null) { return false; }
 
         ++indicator.currentMutationIndex;
@@ -162,37 +144,23 @@ public class PastPresentFutureMutagen implements Mutagen {
      * @return Timeframe PAST, PRESENT or FUTURE. Never PRESENT_OR_FUTURE.
      */
     protected Timeframe getTimeframe(PropertyWriter writer, Class<?>[] groups) {
-        Timeframe[] timeframes = Timeframe.values();
-        int numTimeframes = timeframes.length - 1; // Last Timeframe has no valid annotation.
-        boolean[] apply = new boolean[numTimeframes];
-        for (int i = 0; i < numTimeframes; ++i) {
-            Timeframe timeframe = timeframes[i];
-            Annotation annotation = writer.getAnnotation(timeframe.annotation);
-            boolean applies = annotation != null && groupsOverlap(timeframe.getGroups.apply(annotation), groups);
-            if (!applies) {
-                Annotation listAnnotation = writer.getAnnotation(timeframe.listAnnotation);
-                if (listAnnotation != null && timeframe.getSubAnnotations.apply(listAnnotation) != null) {
-                    Annotation[] annotations = timeframe.getSubAnnotations.apply(listAnnotation);
-                    for (int j = 0, len = annotations.length; j < len && !applies; ++j) {
-                        annotation = annotations[j];
-                        applies = annotation != null && groupsOverlap(timeframe.getGroups.apply(annotation), groups);
-                    }
-                }
-            }
-            apply[i] = applies;
-        }
+        boolean appliesPast = getAppliedAnnotation(Past.class, Past::groups, Past.List.class, Past.List::value, writer, groups) != null;
+        boolean appliesPastOrPresent = getAppliedAnnotation(PastOrPresent.class, PastOrPresent::groups, PastOrPresent.List.class, PastOrPresent.List::value, writer, groups) != null;
+        boolean appliesFutureOrPresent = getAppliedAnnotation(FutureOrPresent.class, FutureOrPresent::groups, FutureOrPresent.List.class, FutureOrPresent.List::value, writer, groups) != null;
+        boolean appliesFuture = getAppliedAnnotation(Future.class, Future::groups, Future.List.class, Future.List::value, writer, groups) != null;
+
         // TODO: XXX: Come up with a simpler schema
-        return apply[Timeframe.FUTURE_OR_PRESENT.ordinal()]
-                ? apply[Timeframe.PAST.ordinal()] || apply[Timeframe.PAST_OR_PRESENT.ordinal()]
+        return appliesFutureOrPresent
+                ? appliesPast || appliesPastOrPresent
                         ? null
                         : Timeframe.PAST
-                : apply[Timeframe.FUTURE.ordinal()]
-                        ? apply[Timeframe.PAST_OR_PRESENT.ordinal()]
+                : appliesFuture
+                        ? appliesPastOrPresent
                                 ? null
-                                : apply[Timeframe.PAST.ordinal()]
+                                : appliesPast
                                         ? Timeframe.PRESENT
                                         : Timeframe.PAST
-                        : apply[Timeframe.PAST.ordinal()] || apply[Timeframe.PAST_OR_PRESENT.ordinal()]
+                        : appliesPast || appliesPastOrPresent
                                 ? Timeframe.FUTURE
                                 : null;
     }

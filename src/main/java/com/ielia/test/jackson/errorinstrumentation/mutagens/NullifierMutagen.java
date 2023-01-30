@@ -39,19 +39,7 @@ public class NullifierMutagen implements Mutagen {
     }
 
     protected boolean annotationApplies(PropertyWriter writer, Class<?>[] groups) {
-        NotNull annotation = writer.getAnnotation(NotNull.class);
-        boolean applies = annotation != null && groupsOverlap(annotation.groups(), groups);
-        if (!applies) {
-            NotNull.List listAnnotation = writer.getAnnotation(NotNull.List.class);
-            if (listAnnotation != null && listAnnotation.value() != null) {
-                NotNull[] annotations = listAnnotation.value();
-                for (int i = 0, len = annotations.length; i < len && !applies; ++i) {
-                    annotation = annotations[i];
-                    applies = annotation != null && groupsOverlap(annotation.groups(), groups);
-                }
-            }
-        }
-        return applies;
+        return getAppliedAnnotation(NotNull.class, NotNull::groups, NotNull.List.class, NotNull.List::value, writer, groups) != null;
     }
 
     // protected boolean trySerializeAsPrimitiveCollectionLike(String fieldName, JsonGenerator gen, int length, MutationIndexIndicator indicator, boolean isField) throws IOException {
