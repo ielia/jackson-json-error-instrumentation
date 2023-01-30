@@ -98,8 +98,6 @@ public class PastPresentFutureMutagen implements Mutagen {
 
     @Override
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
-        if (indicator.targetMutationIndex != indicator.currentMutationIndex) { return false; }
-
         Timeframe timeframe = getTimeframe(writer, groups);
         if (timeframe == null) { return false; }
 
@@ -111,10 +109,9 @@ public class PastPresentFutureMutagen implements Mutagen {
         }
         if (timePickers == null) { return false; }
 
-        Object newValue = timePickers[timeframe.ordinal()].get();
-        if (newValue == null) { return false; }
+        if (indicator.targetMutationIndex != indicator.currentMutationIndex++) { return false; }
 
-        ++indicator.currentMutationIndex;
+        Object newValue = timePickers[timeframe.ordinal()].get();
         // TODO: See if this serializer below will ever need contextualization.
         gen.writeFieldName(writer.getName());
         JsonSerializer<Object> serializer = ((BeanPropertyWriter) writer).getSerializer();
@@ -144,25 +141,13 @@ public class PastPresentFutureMutagen implements Mutagen {
      * @return Timeframe PAST, PRESENT or FUTURE. Never PRESENT_OR_FUTURE.
      */
     protected Timeframe getTimeframe(PropertyWriter writer, Class<?>[] groups) {
-        boolean appliesPast = getAppliedAnnotation(Past.class, Past::groups, Past.List.class, Past.List::value, writer, groups) != null;
-        boolean appliesPastOrPresent = getAppliedAnnotation(PastOrPresent.class, PastOrPresent::groups, PastOrPresent.List.class, PastOrPresent.List::value, writer, groups) != null;
-        boolean appliesFutureOrPresent = getAppliedAnnotation(FutureOrPresent.class, FutureOrPresent::groups, FutureOrPresent.List.class, FutureOrPresent.List::value, writer, groups) != null;
-        boolean appliesFuture = getAppliedAnnotation(Future.class, Future::groups, Future.List.class, Future.List::value, writer, groups) != null;
-
-        // TODO: XXX: Come up with a simpler schema
-        return appliesFutureOrPresent
-                ? appliesPast || appliesPastOrPresent
-                        ? null
-                        : Timeframe.PAST
-                : appliesFuture
-                        ? appliesPastOrPresent
-                                ? null
-                                : appliesPast
-                                        ? Timeframe.PRESENT
-                                        : Timeframe.PAST
-                        : appliesPast || appliesPastOrPresent
-                                ? Timeframe.FUTURE
-                                : null;
+        return getBoundedValue(
+                getAppliedAnnotation(Past.class, Past::groups, Past.List.class, Past.List::value, writer, groups) != null,
+                getAppliedAnnotation(PastOrPresent.class, PastOrPresent::groups, PastOrPresent.List.class, PastOrPresent.List::value, writer, groups) != null,
+                getAppliedAnnotation(FutureOrPresent.class, FutureOrPresent::groups, FutureOrPresent.List.class, FutureOrPresent.List::value, writer, groups) != null,
+                getAppliedAnnotation(Future.class, Future::groups, Future.List.class, Future.List::value, writer, groups) != null,
+                Timeframe.PAST, Timeframe.PRESENT, Timeframe.FUTURE
+        );
     }
 
     protected Calendar getCalendar(ZonedDateTime zdt) {

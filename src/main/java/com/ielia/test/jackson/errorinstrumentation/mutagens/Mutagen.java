@@ -112,4 +112,28 @@ public interface Mutagen {
         }
         return applies ? annotation : null;
     }
+
+    /**
+     * TODO: See where to move this method to.
+     * @param left 'Left' annotation applies.
+     * @param leftOrCenter 'LeftOrCenter' annotation applies.
+     * @param rightOrCenter 'RightOrCenter' annotation applies.
+     * @param right 'Right' annotation applies.
+     * @param leftValue Left value.
+     * @param centerValue Center value.
+     * @param rightValue Right value.
+     * @return Left, center, right value or null if no possible error applies.
+     * @param <T> Value type.
+     */
+    default <T> T getBoundedValue(boolean left, boolean leftOrCenter, boolean rightOrCenter, boolean right,
+                                T leftValue, T centerValue, T rightValue) {
+        // TODO: XXX: Come up with a simpler schema
+        return rightOrCenter
+                ? left || leftOrCenter ? null : leftValue
+                : right
+                        ? leftOrCenter
+                                ? null
+                                : left ? centerValue : leftValue
+                        : left || leftOrCenter ? rightValue : null;
+    }
 }

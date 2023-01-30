@@ -12,12 +12,12 @@ import java.util.Collection;
 import java.util.TreeMap;
 import java.util.function.Function;
 
-public abstract class AbstractNumberValueMutagen implements Mutagen {
+public abstract class AbstractVariableNumberValueMutagen implements Mutagen {
     protected abstract Annotation[] getAnnotations(PropertyWriter writer, Class<?>[] groups);
 
     protected abstract BigDecimal getReplacementValue(Annotation[] annotations, Class<?> propClass);
 
-    protected abstract boolean numberApplies(Annotation[] annotations, Class<?> propClass);
+    protected abstract boolean fieldApplies(Annotation[] annotations, Class<?> propClass);
 
     @SuppressWarnings("ForLoopReplaceableByForEach")
     protected <A extends Annotation, L extends Annotation> void addAnnotations(
@@ -52,7 +52,7 @@ public abstract class AbstractNumberValueMutagen implements Mutagen {
     public boolean serializeAsField(Object bean, JsonGenerator gen, SerializerProvider provider, PropertyWriter writer, MutationIndexIndicator indicator, Class<?>... groups) throws Exception {
         Annotation[] annotations = getAnnotations(writer, groups);
         Class<?> propClass = writer.getType().getRawClass();
-        if (numberApplies(annotations, propClass) && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
+        if (fieldApplies(annotations, propClass) && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             BigDecimal newValue = getReplacementValue(annotations, propClass);
             gen.writeFieldName(writer.getName());
             gen.writeRawValue(newValue.toString());

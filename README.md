@@ -13,3 +13,7 @@ allow us to add specs to array, collection and map elements.
 
 Also consider picking up from the last added test, instead of having to
 regenerate the whole JSON for every error item.
+
+**Will be extremely important to move the counter from the mutagens to a better
+location, so that if the user needs to build custom mutagens the counters will
+not be an extra hurdle to deal with.**

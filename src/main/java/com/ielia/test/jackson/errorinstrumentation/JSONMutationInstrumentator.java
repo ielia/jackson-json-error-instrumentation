@@ -17,6 +17,7 @@ import com.ielia.test.jackson.errorinstrumentation.mutagens.IntegerDigitsMutagen
 import com.ielia.test.jackson.errorinstrumentation.mutagens.MaxMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.MinMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.Mutagen;
+import com.ielia.test.jackson.errorinstrumentation.mutagens.NegZeroPosMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.NullifierMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.PastPresentFutureMutagen;
 
@@ -38,6 +39,7 @@ public class JSONMutationInstrumentator {
             new IntegerDigitsMutagen(),
             new MaxMutagen(),
             new MinMutagen(),
+            new NegZeroPosMutagen(),
             new NullifierMutagen(),
             new PastPresentFutureMutagen()
     };

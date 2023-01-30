@@ -7,7 +7,7 @@ import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.util.TreeMap;
 
-public class IntegerDigitsMutagen extends AbstractNumberValueMutagen {
+public class IntegerDigitsMutagen extends AbstractVariableNumberValueMutagen {
     @Override
     protected Annotation[] getAnnotations(PropertyWriter writer, Class<?>[] groups) {
         TreeMap<BigDecimal, Annotation> annotations = new TreeMap<>();
@@ -21,7 +21,7 @@ public class IntegerDigitsMutagen extends AbstractNumberValueMutagen {
     }
 
     @Override
-    protected boolean numberApplies(Annotation[] annotations, Class<?> propClass) {
+    protected boolean fieldApplies(Annotation[] annotations, Class<?> propClass) {
         return annotations.length > 0 && ((Digits) annotations[0]).integer() > 0;
     }
 }
