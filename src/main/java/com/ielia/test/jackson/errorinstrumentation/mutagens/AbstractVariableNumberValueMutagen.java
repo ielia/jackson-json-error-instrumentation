@@ -54,8 +54,7 @@ public abstract class AbstractVariableNumberValueMutagen implements Mutagen {
         Class<?> propClass = writer.getType().getRawClass();
         if (fieldApplies(annotations, propClass) && indicator.targetMutationIndex == indicator.currentMutationIndex++) {
             BigDecimal newValue = getReplacementValue(annotations, propClass);
-            gen.writeFieldName(writer.getName());
-            gen.writeRawValue(newValue.toString());
+            gen.writeNumberField(writer.getName(), newValue);
             indicator.setDescription("Changed value from " + ((BeanPropertyWriter) writer).get(bean) + " to " + newValue + ".");
             indicator.setMutagen(this.getClass());
             indicator.setPath(gen.getOutputContext().pathAsPointer().toString());
