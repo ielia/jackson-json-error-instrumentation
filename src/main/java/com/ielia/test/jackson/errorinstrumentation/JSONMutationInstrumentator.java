@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.ielia.test.jackson.errorinstrumentation.filters.CompositeFilter;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.DataTypeMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.EmptyingMutagen;
@@ -113,12 +114,9 @@ public class JSONMutationInstrumentator {
     }
 
     protected ObjectWriter getWriter(ObjectMapper mapper) {
+        mapper.registerModule(new JavaTimeModule());
         for (Map.Entry<Class<?>, Class<?>> mixinSpec : mixins.entrySet()) {
             mapper.addMixIn(mixinSpec.getKey(), mixinSpec.getValue());
-        }
-        // TODO: Use the non-deprecated version
-        if (view != null) {
-            mapper.configure(MapperFeature.DEFAULT_VIEW_INCLUSION, false);
         }
         return mapper.writerWithView(view);
     }

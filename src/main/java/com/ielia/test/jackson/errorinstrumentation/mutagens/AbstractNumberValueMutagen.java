@@ -9,14 +9,38 @@ import com.ielia.test.jackson.errorinstrumentation.MutationIndexIndicator;
 import java.lang.annotation.Annotation;
 import java.math.BigDecimal;
 import java.util.Collection;
+import java.util.TreeMap;
+import java.util.function.Function;
 
 public abstract class AbstractNumberValueMutagen implements Mutagen {
     protected abstract Annotation[] getAnnotations(PropertyWriter writer, Class<?>[] groups);
 
     protected abstract BigDecimal getReplacementValue(Annotation[] annotations, Class<?> propClass);
 
-    protected boolean numberApplies(Annotation[] annotations, Class<?> propClass) {
-        return annotations.length > 0 || (propClass.isPrimitive() && propClass != boolean.class && propClass != char.class);
+    protected abstract boolean numberApplies(Annotation[] annotations, Class<?> propClass);
+
+    @SuppressWarnings("ForLoopReplaceableByForEach")
+    protected <A extends Annotation, L extends Annotation> void addAnnotations(
+            TreeMap<BigDecimal, Annotation> annotations, PropertyWriter writer, Class<?>[] groups,
+            Class<A> annotationType, Class<L> annotationListType,
+            Function<A, Class<?>[]> getGroups, Function<L, A[]> getSubAnnotations, Function<A, BigDecimal> getValue) {
+        A annotation = writer.getAnnotation(annotationType);
+        addAnnotation(annotations, annotation, groups, getGroups, getValue);
+        L listAnnotation = writer.getAnnotation(annotationListType);
+        A[] subAnnotations = listAnnotation == null ? null : getSubAnnotations.apply(listAnnotation);
+        if (subAnnotations != null) {
+            for (int i = 0, len = subAnnotations.length; i < len; ++i) {
+                annotation = subAnnotations[i];
+                addAnnotation(annotations, annotation, groups, getGroups, getValue);
+            }
+        }
+    }
+
+    protected <A extends Annotation> void addAnnotation(TreeMap<BigDecimal, Annotation> annotations, A annotation, Class<?>[] groups,
+                                                        Function<A, Class<?>[]> getGroups, Function<A, BigDecimal> getValue) {
+        if (annotation != null && groupsOverlap(getGroups.apply(annotation), groups)) {
+            annotations.put(getValue.apply(annotation), annotation);
+        }
     }
 
     @Override
