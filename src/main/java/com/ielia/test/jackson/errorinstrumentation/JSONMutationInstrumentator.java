@@ -12,10 +12,13 @@ import com.ielia.test.jackson.errorinstrumentation.mutagens.DataTypeMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.EmptyingMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.FieldNameCaseSwapMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.FieldNameEmptyingMutagen;
+import com.ielia.test.jackson.errorinstrumentation.mutagens.FractionDigitsMutagen;
+import com.ielia.test.jackson.errorinstrumentation.mutagens.IntegerDigitsMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.MaxMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.MinMutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.Mutagen;
 import com.ielia.test.jackson.errorinstrumentation.mutagens.NullifierMutagen;
+import com.ielia.test.jackson.errorinstrumentation.mutagens.PastPresentFutureMutagen;
 
 import java.lang.reflect.Array;
 import java.util.Collection;
@@ -31,9 +34,12 @@ public class JSONMutationInstrumentator {
             new EmptyingMutagen(),
             new FieldNameCaseSwapMutagen(),
             new FieldNameEmptyingMutagen(),
+            new FractionDigitsMutagen(),
+            new IntegerDigitsMutagen(),
             new MaxMutagen(),
             new MinMutagen(),
-            new NullifierMutagen()
+            new NullifierMutagen(),
+            new PastPresentFutureMutagen()
     };
 
     protected final Object bean;
